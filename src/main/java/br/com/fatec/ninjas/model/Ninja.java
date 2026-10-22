@@ -19,7 +19,7 @@ public class Ninja {
     @GeneratedValue (strategy = GenerationType.AUTO)
     @Schema(
             description = "Identificador único do ninja",
-            example = "1"
+            accessMode = Schema.AccessMode.READ_ONLY
     )
     private Long id_ninja;
 
@@ -33,6 +33,7 @@ public class Ninja {
     private String nome;
 
     @Column (name = "cpf_ninja", nullable=false, unique=true)
+    @NotBlank(message = "O CPF é obrigatório.")
     @CPF
     @Schema(
             description = "CPF do ninja (***Valido)",
@@ -41,6 +42,7 @@ public class Ninja {
     private String cpf;
 
     @Column (name = "email_ninja", nullable=false, unique=true)
+    @NotBlank(message = "O e-mail é obrigatório.")
     @Email (message = "E-mail inválido (email@email.com)")
     @Schema(
             description = "E-mail do ninja (***Valido)",

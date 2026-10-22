@@ -4,7 +4,9 @@ import br.com.fatec.clas.model.Cla;
 import br.com.fatec.clas.repository.ClaRepository;
 import br.com.fatec.ninjas.model.Ninja;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +18,8 @@ public class ClaService {
     private ClaRepository claRepository;
 
     //Cadastrar Clã
-    public Cla cadastrarCla(Cla cla){
+    public Cla cadastrarCla(Cla cla) {
+        cla.setId_cla(null);
         return claRepository.save(cla);
     }
 
@@ -26,14 +29,20 @@ public class ClaService {
     }
 
     //Pesquisar clã pelo ID
-    public Optional<Cla> pesquisarCla (Long id){
-        return claRepository.findById(id);
+    public Optional<Cla> pesquisarCla(Long id) {
+        return Optional.of(claRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Cla não encontrado")));
     }
 
     //Pesquisar clã pelo nome
-    public Cla pesquisarClaPorNome (String nome) {
-        return claRepository.findByNomeIgnoreCase(nome);
-    }
+    public Cla pesquisarClaPorNome(String nome) {
+        Cla encontrado = claRepository.findByNomeIgnoreCase(nome);
+        if (encontrado == null)
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Cla não encontrado");
+        return encontrado;
+    };
 
     //Pesquisar clã por parte da descrição
     public List<Cla> pesquisarClaPorParteDaDescricao (String descricao) {
@@ -55,11 +64,14 @@ public class ClaService {
 
             return claRepository.save(cla);
         }
-        return null;
+        throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Cla não encontrado");
     }
 
     //Excluir clã pelo ID
-    public void deletarCla (Long id) {
-        claRepository.deleteById(id);
+    public void deletarCla(Long id) {
+        claRepository.delete(claRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Cla não encontrado")));
     }
 }

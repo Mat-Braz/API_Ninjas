@@ -4,6 +4,8 @@ import br.com.fatec.ninjas.model.Ninja;
 import br.com.fatec.ninjas.repository.NinjaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +17,8 @@ public class NinjaService {
     @Autowired
     private NinjaRepository ninjaRepository;
 
-    public Ninja cadastrarNinja(Ninja ninja){
+    public Ninja cadastrarNinja(Ninja ninja) {
+        ninja.setId_ninja(null);
         return ninjaRepository.save(ninja);
     }
 
@@ -24,12 +27,18 @@ public class NinjaService {
     }
 
     // Optional: O valor pode existir ou não. Trata a exceção do nulo.
-    public Optional<Ninja> pesquisarNinja (Long id){
-        return ninjaRepository.findById(id);
+    public Optional<Ninja> pesquisarNinja(Long id) {
+        return Optional.of(ninjaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Ninja não encontrado")));
     }
 
-    public Ninja pesquisarNinjaPorNome (String nome) {
-        return ninjaRepository.findByNome(nome);
+    public Ninja pesquisarNinjaPorNome(String nome) {
+        Ninja encontrado = ninjaRepository.findByNome(nome);
+        if (encontrado == null)
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Ninja não encontrado");
+        return encontrado;
     }
 
     public List<Ninja> pesquisarNinjaPorParteDoNome (String nome) {
@@ -48,10 +57,13 @@ public class NinjaService {
 
             return ninjaRepository.save(ninja);
         }
-        return null;
+        throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Ninja não encontrado");
     }
 
-    public void deletarNinjar (Long id) {
-        ninjaRepository.deleteById(id);
+    public void deletarNinja(Long id) {
+        ninjaRepository.delete(ninjaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Ninja não encontrado")));
     }
 }
